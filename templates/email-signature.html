@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BitBuilder Cloud - Email Signature Generator</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f5f5;
+      padding: 40px 20px;
+      margin: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #252a34;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .editor-section {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .editor-section h2 {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #252a34;
+      padding-bottom: 10px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: #252a34;
+      box-shadow: 0 0 0 3px rgba(37,42,52,0.1);
+    }
+    .signature-preview {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .signature-preview h2 {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #252a34;
+      padding-bottom: 10px;
+    }
+    #signature-output {
+      background: #f9fafb;
+      padding: 20px;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      min-height: 200px;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    button {
+      background: #252a34;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #1a1e28;
+    }
+    button.secondary {
+      background: #6b7280;
+    }
+    button.secondary:hover {
+      background: #4b5563;
+    }
+    .success-message {
+      background: #10b981;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 4px;
+      margin-top: 15px;
+      display: none;
+    }
+    .success-message.show {
+      display: block;
+    }
+    .code-section {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .code-section h2 {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 15px;
+    }
+    textarea.code {
+      width: 100%;
+      min-height: 300px;
+      padding: 15px;
+      font-family: monospace;
+      font-size: 13px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: vertical;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Email Signature Generator</h1>
+    <p class="subtitle">Create a professional email signature for BitBuilder Cloud</p>
+
+    <div class="editor-section">
+      <h2>Your Information</h2>
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" placeholder="Daniel Bodnar" value="Daniel Bodnar">
+      </div>
+      <div class="form-group">
+        <label for="role">Job Title</label>
+        <input type="text" id="role" placeholder="Principal Engineer" value="Principal Engineer">
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="daniel.bodnar@gmail.com" value="daniel.bodnar@gmail.com">
+      </div>
+      <div class="form-group">
+        <label for="github">GitHub Username (optional)</label>
+        <input type="text" id="github" placeholder="danielbodnar" value="danielbodnar">
+      </div>
+      <div class="form-group">
+        <label for="website">Website (optional)</label>
+        <input type="text" id="website" placeholder="bitbuilder.io" value="bitbuilder.io">
+      </div>
+    </div>
+
+    <div class="signature-preview">
+      <h2>Preview</h2>
+      <div id="signature-output"></div>
+      <div class="button-group">
+        <button onclick="copyHTML()">Copy HTML Code</button>
+        <button class="secondary" onclick="copyPlainText()">Copy Plain Text</button>
+      </div>
+      <div id="success-message" class="success-message">Copied to clipboard!</div>
+    </div>
+
+    <div class="code-section">
+      <h2>HTML Code (for email clients)</h2>
+      <textarea id="html-code" class="code" readonly></textarea>
+      <button onclick="copyHTMLCode()" style="margin-top: 10px;">Copy Code</button>
+    </div>
+  </div>
+
+  <script>
+    // Auto-generate signature on input
+    const inputs = ['name', 'role', 'email', 'github', 'website'];
+    inputs.forEach(id => {
+      document.getElementById(id).addEventListener('input', generateSignature);
+    });
+
+    // Initial generation
+    generateSignature();
+
+    function generateSignature() {
+      const name = document.getElementById('name').value || 'Your Name';
+      const role = document.getElementById('role').value || 'Your Title';
+      const email = document.getElementById('email').value || 'your.email@example.com';
+      const github = document.getElementById('github').value;
+      const website = document.getElementById('website').value;
+
+      const html = `
+<table cellpadding="0" cellspacing="0" border="0" style="font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: #333333;">
+  <tr>
+    <td style="padding-right: 20px; border-right: 3px solid #252a34;">
+      <div style="width: 60px; height: 60px; background: #252a34; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+        <span style="font-family: monospace; font-weight: bold; color: white; font-size: 24px;">&gt;_</span>
+      </div>
+    </td>
+    <td style="padding-left: 20px;">
+      <div style="margin-bottom: 5px;">
+        <strong style="font-size: 16px; color: #252a34;">${name}</strong>
+      </div>
+      <div style="font-size: 13px; color: #666666; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+        ${role}
+      </div>
+      <div style="font-size: 18px; font-weight: 700; color: #252a34; margin-bottom: 2px;">
+        BitBuilder
+      </div>
+      <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #999999;">
+        SECURE ENGINEERING
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" style="padding-top: 15px;">
+      <div style="font-family: monospace; font-size: 12px; color: #666666; line-height: 1.8;">
+        ${email ? `<div>📧 ${email}</div>` : ''}
+        ${github ? `<div>{ } github.com/${github}</div>` : ''}
+        ${website ? `<div>🌐 ${website}</div>` : ''}
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" style="padding-top: 12px; border-top: 1px solid #e5e7eb; margin-top: 12px;">
+      <div style="font-size: 10px; color: #999999; text-transform: uppercase; letter-spacing: 1px;">
+        Distributed • Vendor Agnostic • E2E Encrypted
+      </div>
+    </td>
+  </tr>
+</table>`;
+
+      document.getElementById('signature-output').innerHTML = html;
+      document.getElementById('html-code').value = html;
+    }
+
+    function copyHTML() {
+      const signatureHTML = document.getElementById('signature-output').innerHTML;
+      copyToClipboard(signatureHTML);
+    }
+
+    function copyPlainText() {
+      const name = document.getElementById('name').value || 'Your Name';
+      const role = document.getElementById('role').value || 'Your Title';
+      const email = document.getElementById('email').value || 'your.email@example.com';
+      const github = document.getElementById('github').value;
+      const website = document.getElementById('website').value;
+
+      let plainText = `${name}\n${role}\nBitBuilder - Secure Engineering\n\n`;
+      if (email) plainText += `Email: ${email}\n`;
+      if (github) plainText += `GitHub: github.com/${github}\n`;
+      if (website) plainText += `Web: ${website}\n`;
+      plainText += `\nDistributed • Vendor Agnostic • E2E Encrypted`;
+
+      copyToClipboard(plainText);
+    }
+
+    function copyHTMLCode() {
+      const code = document.getElementById('html-code').value;
+      copyToClipboard(code);
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const message = document.getElementById('success-message');
+        message.classList.add('show');
+        setTimeout(() => message.classList.remove('show'), 3000);
+      });
+    }
+  </script>
+</body>
+</html>

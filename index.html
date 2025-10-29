@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BitBuilder Cloud - Brand Asset Catalog</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+      color: #333;
+    }
+    .header {
+      background: #252a34;
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+    .header .tagline {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .header .subtitle {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    .quick-link {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #333;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .quick-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .quick-link-icon {
+      width: 50px;
+      height: 50px;
+      background: #252a34;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .quick-link-content h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+      color: #252a34;
+    }
+    .quick-link-content p {
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .section {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .section h2 {
+      font-size: 1.75rem;
+      color: #252a34;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 3px solid #252a34;
+    }
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .logo-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 1.5rem;
+      background: #f9fafb;
+      transition: all 0.2s;
+    }
+    .logo-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    .logo-preview {
+      height: 150px;
+      background: white;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      border: 1px solid #e0e0e0;
+      padding: 1rem;
+    }
+    .logo-preview.dark {
+      background: #252a34;
+    }
+    .logo-preview img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .logo-info h3 {
+      font-size: 1rem;
+      color: #252a34;
+      margin-bottom: 0.5rem;
+    }
+    .logo-info p {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 0.75rem;
+      line-height: 1.5;
+    }
+    .logo-meta {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .meta-tag {
+      background: #252a34;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .meta-tag.color-white {
+      background: white;
+      color: #252a34;
+      border: 1px solid #252a34;
+    }
+    .meta-tag.color-blue {
+      background: #3b82f6;
+    }
+    .download-btn {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background: #252a34;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+    .download-btn:hover {
+      background: #1a1e28;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat {
+      background: #252a34;
+      color: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>BitBuilder Cloud</h1>
+    <div class="tagline">Brand Asset Catalog</div>
+    <div class="subtitle">Distributed • Vendor Agnostic • E2E Encrypted</div>
+  </div>
+
+  <div class="container">
+    <!-- Quick Links -->
+    <div class="quick-links">
+      <a href="README.md" class="quick-link">
+        <div class="quick-link-icon">📖</div>
+        <div class="quick-link-content">
+          <h3>Documentation</h3>
+          <p>Complete package guide</p>
+        </div>
+      </a>
+      <a href="BRAND_GUIDELINES.md" class="quick-link">
+        <div class="quick-link-icon">🎨</div>
+        <div class="quick-link-content">
+          <h3>Brand Guidelines</h3>
+          <p>Usage rules & specifications</p>
+        </div>
+      </a>
+      <a href="SOCIAL_MEDIA_ASSETS.md" class="quick-link">
+        <div class="quick-link-icon">📱</div>
+        <div class="quick-link-content">
+          <h3>Social Media</h3>
+          <p>Platform-specific specs</p>
+        </div>
+      </a>
+      <a href="svg-to-png-converter.html" class="quick-link">
+        <div class="quick-link-icon">🖼️</div>
+        <div class="quick-link-content">
+          <h3>PNG Generator</h3>
+          <p>Convert SVG to PNG</p>
+        </div>
+      </a>
+      <a href="templates/business-card-front.html" class="quick-link">
+        <div class="quick-link-icon">💼</div>
+        <div class="quick-link-content">
+          <h3>Business Cards</h3>
+          <p>Printable templates</p>
+        </div>
+      </a>
+      <a href="templates/letterhead.html" class="quick-link">
+        <div class="quick-link-icon">📄</div>
+        <div class="quick-link-content">
+          <h3>Letterhead</h3>
+          <p>Official stationery</p>
+        </div>
+      </a>
+      <a href="templates/email-signature.html" class="quick-link">
+        <div class="quick-link-icon">✉️</div>
+        <div class="quick-link-content">
+          <h3>Email Signature</h3>
+          <p>HTML signature generator</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-number">12</div>
+        <div class="stat-label">Logo Variations</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">48</div>
+        <div class="stat-label">SVG Files</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">8+</div>
+        <div class="stat-label">PNG Sizes</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">5</div>
+        <div class="stat-label">Templates</div>
+      </div>
+    </div>
+
+    <!-- Logo Variations -->
+    <div class="section">
+      <h2>Logo Variations</h2>
+      <div class="logo-grid">
+        <!-- Logo 01 -->
+        <div class="logo-card">
+          <div class="logo-preview">
+            <img src="exports/optimized-svg/01-horizontal-black.svg" alt="Horizontal Black">
+          </div>
+          <div class="logo-info">
+            <h3>01. Horizontal Black</h3>
+            <p>Primary logo for light backgrounds. Use in headers, navigation, and print materials.</p>
+            <div class="logo-meta">
+              <span class="meta-tag">Black</span>
+              <span class="meta-tag">Primary</span>
+            </div>
+            <a href="exports/optimized-svg/01-horizontal-black.svg" download class="download-btn">Download SVG</a>
+          </div>
+        </div>
+
+        <!-- Logo 02 -->
+        <div class="logo-card">
+          <div class="logo-preview dark">
+            <img src="exports/optimized-svg/02-horizontal-white.svg" alt="Horizontal White">
+          </div>
+          <div class="logo-info">
+            <h3>02. Horizontal White</h3>
+            <p>Primary logo for dark backgrounds. Perfect for dark mode UIs and video overlays.</p>
+            <div class="logo-meta">
+              <span class="meta-tag color-white">White</span>
+              <span class="meta-tag">Primary</span>
+            </div>
+            <a href="exports/optimized-svg/02-horizontal-white.svg" download class="download-btn">Download SVG</a>
+          </div>
+        </div>
+
+        <!-- Logo 03 -->
+        <div class="logo-card">
+          <div class="logo-preview">
+            <img src="exports/optimized-svg/03-large-black.svg" alt="Large Black">
+          </div>
+          <div class="logo-info">
+            <h3>03. Large Black</h3>
+            <p>Scaled up version for high-impact placements like billboards and large format print.</p>
+            <div class="logo-meta">
+              <span class="meta-tag">Black</span>
+              <span class="meta-tag">Large</span>
+            </div>
+            <a href="exports/optimized-svg/03-large-black.svg" download class="download-btn">Download SVG</a>
+          </div>
+        </div>
+
+        <!-- Logo 04 -->
+        <div class="logo-card">
+          <div class="logo-preview dark">
+            <img src="exports/optimized-svg/04-large-white.svg" alt="Large White">
+          </div>
+          <div class="logo-info">
+            <h3>04. Large White</h3>
+            <p>Large scale version for dark backgrounds and hero sections.</p>
+            <div class="logo-meta">
+              <span class="meta-tag color-white">White</span>
+              <span class="meta-tag">Large</span>
+            </div>
+            <a href="exports/optimized-svg/04-large-white.svg" download class="download-btn">Download SVG</a>
+          </div>
+        </div>
+
+        <!-- Logo 05 -->
+        <div class="logo-card">
+          <div class="logo-preview dark">
+            <img src="exports/optimized-svg/05-with-tagline-white.svg" alt="With Tagline White">
+          </div>
+          <div class="logo-info">
+            <h3>05. Full Brand - White</h3>
+            <p>Complete brand mark with "Secure Engineering" tagline. For marketing materials.</p>
+            <div class="logo-meta">
+              <span class="meta-tag color-white">White</span>
+              <span class="meta-tag">Tagline</span>
+            </div>
+            <a href="exports/optimized-svg/05-with-tagline-white.svg" download class="download-btn">Download SVG</a>
+          </div>
+        </div>
+
+        <!-- Logo 06 -->
+        <div class="logo-card">
+          <div class="logo-preview">
+            <img src="exports/optimized-svg/06-with-tagline-black.svg" alt="With Tagline Black">
+          </div>
+          <div class="logo-info">
+            <h3>06. Full Brand - Black</h3>
+            <p>Complete brand mark for light backgrounds. Ideal for documents and presentations.</p>
+            <div class="logo-meta">
+              <span class="meta-tag">Black</span>
+              <span class="meta-tag">Tagline</span>
+            </div>
+            <a href="exports/optimized-svg/06-with-tagline-black.svg" download class="download-btn">Download SVG</a>
+          </div>
+        </div>
+
+        <!-- Logo 07 -->
+        <div class="logo-card">
+          <div class="logo-preview">
+            <img src="exports/optimized-svg/07-compact-blue.svg" alt="Compact Blue">
+          </div>
+          <div class="logo-info">
+            <h3>07. Compact Blue</h3>
+            <p>Brand mark in signature dark blue. For secondary placements and footer logos.</p>
+            <div class="logo-meta">
+              <span class="meta-tag color-blue">Blue</span>
+              <span class="meta-tag">Compact</span>
+            </div>
+            <a href="exports/optimized-svg/07-compact-blue.svg" download class="download-btn">Download SVG</a>
+          </div>
+        </div>
+
+        <!-- Logo 08 -->
+        <div class="logo-card">
+          <div class="logo-preview">
+            <img src="exports/optimized-svg/08-horizontal-icon-black.svg" alt="Horizontal Icon Black">
+          </div>
+          <div class="logo-info">
+            <h3>08. Horizontal with Icon - Black</h3>
+            <p>Logo with framed terminal icon. Perfect for technical documentation.</p>
+            <div class="logo-meta">
+              <span class="meta-tag">Black</span>
+              <span class="meta-tag">Framed</span>
+            </div>
+            <a href="exports/optimized-svg/08-horizontal-icon-black.svg" download class="download-btn">Download SVG</a>
+          </div>
+        </div>
+
+        <!-- Logo 09 -->
+        <div class="logo-card">
+          <div class="logo-preview">
+            <img src="exports/optimized-svg/09-compact-black.svg" alt="Compact Black">
+          </div>
+          <div class="logo-info">
+            <h3>09. Compact Black</h3>
+            <p>Space-efficient version for mobile headers and constrained areas.</p>
+            <div class="logo-meta">
+              <span class="meta-tag">Black</span>
+              <span class="meta-tag">Compact</span>
+            </div>
+            <a href="exports/optimized-svg/09-compact-black.svg" download class="download-btn">Download SVG</a>
+          </div>
+        </div>
+
+        <!-- Logo 10 -->
+        <div class="logo-card">
+          <div class="logo-preview">
+            <img src="exports/optimized-svg/10-compact-icon-black.svg" alt="Compact Icon Black">
+          </div>
+          <div class="logo-info">
+            <h3>10. Compact Icon - Black</h3>
+            <p>Compact with boxed icon. Excellent for technical badges and certifications.</p>
+            <div class="logo-meta">
+              <span class="meta-tag">Black</span>
+              <span class="meta-tag">Badge</span>
+            </div>
+            <a href="exports/optimized-svg/10-compact-icon-black.svg" download class="download-btn">Download SVG</a>
+          </div>
+        </div>
+
+        <!-- Logo 11 -->
+        <div class="logo-card">
+          <div class="logo-preview dark">
+            <img src="exports/optimized-svg/11-compact-icon-white.svg" alt="Compact Icon White">
+          </div>
+          <div class="logo-info">
+            <h3>11. Compact Icon - White</h3>
+            <p>Compact version for dark backgrounds. Ideal for profile pictures and avatars.</p>
+            <div class="logo-meta">
+              <span class="meta-tag color-white">White</span>
+              <span class="meta-tag">Badge</span>
+            </div>
+            <a href="exports/optimized-svg/11-compact-icon-white.svg" download class="download-btn">Download SVG</a>
+          </div>
+        </div>
+
+        <!-- Logo 12 -->
+        <div class="logo-card">
+          <div class="logo-preview dark">
+            <img src="exports/optimized-svg/12-full-brand-white.svg" alt="Full Brand White">
+          </div>
+          <div class="logo-info">
+            <h3>12. Complete Brand Package</h3>
+            <p>Full brand identity with all elements. For premium marketing materials.</p>
+            <div class="logo-meta">
+              <span class="meta-tag color-white">White</span>
+              <span class="meta-tag">Complete</span>
+            </div>
+            <a href="exports/optimized-svg/12-full-brand-white.svg" download class="download-btn">Download SVG</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Formats -->
+    <div class="section">
+      <h2>Additional Formats</h2>
+      <p style="margin-bottom: 1rem; color: #666;">Each logo variation is also available in:</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+        <div style="padding: 1rem; background: #f9fafb; border-radius: 4px;">
+          <h4 style="color: #252a34; margin-bottom: 0.5rem;">⬜ Square Format</h4>
+          <p style="font-size: 0.85rem; color: #666;">Perfect for social media avatars and app icons</p>
+        </div>
+        <div style="padding: 1rem; background: #f9fafb; border-radius: 4px;">
+          <h4 style="color: #252a34; margin-bottom: 0.5rem;">⭕ Circular Format</h4>
+          <p style="font-size: 0.85rem; color: #666;">Ideal for profile pictures and badges</p>
+        </div>
+        <div style="padding: 1rem; background: #f9fafb; border-radius: 4px;">
+          <h4 style="color: #252a34; margin-bottom: 0.5rem;">🔄 Inverted Colors</h4>
+          <p style="font-size: 0.85rem; color: #666;">Alternate color schemes for flexibility</p>
+        </div>
+        <div style="padding: 1rem; background: #f9fafb; border-radius: 4px;">
+          <h4 style="color: #252a34; margin-bottom: 0.5rem;">🖼️ PNG Export</h4>
+          <p style="font-size: 0.85rem; color: #666;">Multiple resolutions (16px to 2048px)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p><strong>BitBuilder Cloud</strong> - Secure Engineering</p>
+    <p style="margin-top: 0.5rem; font-size: 0.85rem;">
+      Distributed • Vendor Agnostic • E2E Encrypted • Multi-Cloud Infrastructure Platform
+    </p>
+    <p style="margin-top: 1rem; font-size: 0.8rem; opacity: 0.7;">
+      © 2025 BitBuilder Cloud. All rights reserved.
+    </p>
+  </div>
+</body>
+</html>

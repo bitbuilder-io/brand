@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BitBuilder Logo SVG to PNG Converter</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 2rem;
+      background: #f5f5f5;
+      color: #333;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: #111;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+    .controls {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .control-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #444;
+    }
+    select, input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    .size-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .size-option {
+      padding: 0.75rem;
+      background: #f0f0f0;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .size-option:hover {
+      background: #e0e0e0;
+      border-color: #999;
+    }
+    .size-option.selected {
+      background: #252a34;
+      color: white;
+      border-color: #252a34;
+    }
+    button {
+      background: #252a34;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #1a1e28;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .preview-area {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .preview-item {
+      text-align: center;
+      padding: 1rem;
+      border: 1px solid #eee;
+      border-radius: 4px;
+    }
+    .preview-item canvas {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .preview-item h3 {
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      color: #666;
+    }
+    .preview-item .download-btn {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: #252a34;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    .preview-item .download-btn:hover {
+      background: #1a1e28;
+    }
+    .progress {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #e8f5e9;
+      border-radius: 4px;
+      display: none;
+    }
+    .progress.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>BitBuilder Logo Converter</h1>
+    <p class="subtitle">Convert SVG logos to PNG format at any resolution</p>
+
+    <div class="controls">
+      <div class="control-group">
+        <label for="logo-select">Select Logo Variation:</label>
+        <select id="logo-select">
+          <option value="">Loading logos...</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Select Export Sizes:</label>
+        <div class="size-grid" id="size-grid">
+          <div class="size-option" data-size="16">16×16</div>
+          <div class="size-option" data-size="32">32×32</div>
+          <div class="size-option" data-size="64">64×64</div>
+          <div class="size-option" data-size="128">128×128</div>
+          <div class="size-option" data-size="256">256×256</div>
+          <div class="size-option" data-size="512">512×512</div>
+          <div class="size-option" data-size="1024">1024×1024</div>
+          <div class="size-option" data-size="2048">2048×2048</div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="bg-color">Background Color:</label>
+        <input type="color" id="bg-color" value="#ffffff">
+        <label style="display:inline; margin-left: 1rem;">
+          <input type="checkbox" id="transparent-bg" checked> Transparent Background
+        </label>
+      </div>
+
+      <button id="convert-btn">Generate PNGs</button>
+      <div class="progress" id="progress">Generating images...</div>
+    </div>
+
+    <div class="preview-area">
+      <h2>Generated Images</h2>
+      <div class="preview-grid" id="preview-grid"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    const logoTypes = ['optimized-svg', 'square-svg', 'circular-svg', 'inverted-svg'];
+    const sizes = [16, 32, 64, 128, 256, 512, 1024, 2048];
+    let selectedSizes = new Set([256, 512, 1024]);
+    let currentLogo = null;
+
+    // Initialize
+    loadLogoList();
+    setupEventListeners();
+
+    function setupEventListeners() {
+      // Size selection
+      document.querySelectorAll('.size-option').forEach(el => {
+        const size = parseInt(el.dataset.size);
+        if (selectedSizes.has(size)) el.classList.add('selected');
+
+        el.addEventListener('click', () => {
+          const size = parseInt(el.dataset.size);
+          if (selectedSizes.has(size)) {
+            selectedSizes.delete(size);
+            el.classList.remove('selected');
+          } else {
+            selectedSizes.add(size);
+            el.classList.add('selected');
+          }
+        });
+      });
+
+      // Convert button
+      document.getElementById('convert-btn').addEventListener('click', generatePNGs);
+
+      // Logo selection
+      document.getElementById('logo-select').addEventListener('change', (e) => {
+        currentLogo = e.target.value;
+      });
+
+      // Transparent background toggle
+      document.getElementById('transparent-bg').addEventListener('change', (e) => {
+        document.getElementById('bg-color').disabled = e.target.checked;
+      });
+    }
+
+    async function loadLogoList() {
+      try {
+        const response = await fetch('./exports/optimized-svg/');
+        // Note: This requires directory listing to be enabled
+        // Alternatively, we can hardcode the logo list or use a manifest file
+
+        // For now, create a static list based on our known logos
+        const logos = [
+          '01-horizontal-black',
+          '02-horizontal-white',
+          '03-large-black',
+          '04-large-white',
+          '05-with-tagline-white',
+          '06-with-tagline-black',
+          '07-compact-blue',
+          '08-horizontal-icon-black',
+          '09-compact-black',
+          '10-compact-icon-black',
+          '11-compact-icon-white',
+          '12-full-brand-white'
+        ];
+
+        const select = document.getElementById('logo-select');
+        select.innerHTML = '<option value="">Select a logo...</option>';
+
+        logos.forEach(logo => {
+          const option = document.createElement('option');
+          option.value = logo;
+          option.textContent = logo.replace(/-/g, ' ').toUpperCase();
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading logos:', error);
+      }
+    }
+
+    async function generatePNGs() {
+      if (!currentLogo) {
+        alert('Please select a logo first!');
+        return;
+      }
+
+      if (selectedSizes.size === 0) {
+        alert('Please select at least one size!');
+        return;
+      }
+
+      const progress = document.getElementById('progress');
+      const previewGrid = document.getElementById('preview-grid');
+      const transparent = document.getElementById('transparent-bg').checked;
+      const bgColor = document.getElementById('bg-color').value;
+
+      progress.classList.add('active');
+      previewGrid.innerHTML = '';
+
+      // Load SVG
+      try {
+        const svgResponse = await fetch(`./exports/optimized-svg/${currentLogo}.svg`);
+        const svgText = await svgResponse.text();
+
+        // Generate PNGs for each selected size
+        for (const size of Array.from(selectedSizes).sort((a, b) => a - b)) {
+          await generatePNG(svgText, size, transparent, bgColor, previewGrid);
+        }
+
+        progress.classList.remove('active');
+      } catch (error) {
+        console.error('Error generating PNGs:', error);
+        alert('Error generating PNGs. Check console for details.');
+        progress.classList.remove('active');
+      }
+    }
+
+    async function generatePNG(svgText, size, transparent, bgColor, container) {
+      return new Promise((resolve) => {
+        // Create an image from SVG
+        const img = new Image();
+        const blob = new Blob([svgText], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+
+          // Fill background if not transparent
+          if (!transparent) {
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, size, size);
+          }
+
+          // Draw image
+          ctx.drawImage(img, 0, 0, size, size);
+
+          // Create preview item
+          const previewItem = document.createElement('div');
+          previewItem.className = 'preview-item';
+          previewItem.innerHTML = `
+            <canvas></canvas>
+            <h3>${size}×${size}</h3>
+            <a class="download-btn" download="${currentLogo}-${size}x${size}.png">Download</a>
+          `;
+
+          const previewCanvas = previewItem.querySelector('canvas');
+          const previewCtx = previewCanvas.getContext('2d');
+          const previewSize = Math.min(size, 200);
+          previewCanvas.width = previewSize;
+          previewCanvas.height = previewSize;
+
+          if (!transparent) {
+            previewCtx.fillStyle = bgColor;
+            previewCtx.fillRect(0, 0, previewSize, previewSize);
+          }
+
+          previewCtx.drawImage(canvas, 0, 0, size, size, 0, 0, previewSize, previewSize);
+
+          // Set download link
+          canvas.toBlob((blob) => {
+            const downloadUrl = URL.createObjectURL(blob);
+            previewItem.querySelector('.download-btn').href = downloadUrl;
+            container.appendChild(previewItem);
+            URL.revokeObjectURL(url);
+            resolve();
+          });
+        };
+
+        img.src = url;
+      });
+    }
+  </script>
+</body>
+</html>
