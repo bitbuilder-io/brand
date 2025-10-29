@@ -2,6 +2,14 @@
 
 Welcome to the BitBuilder Cloud brand identity system! This package contains everything you need to represent the BitBuilder Cloud brand professionally and consistently across all media.
 
+## 🌐 Live Preview
+
+**View online**: [bitbuilder-io.github.io/bitbuilder](https://bitbuilder-io.github.io/bitbuilder/)
+
+This branding package is automatically deployed to GitHub Pages. Browse the visual catalog, download assets, and use templates directly from your browser.
+
+See [GITHUB_PAGES_SETUP.md](GITHUB_PAGES_SETUP.md) for deployment configuration details.
+
 ---
 
 ## 📦 Package Contents
