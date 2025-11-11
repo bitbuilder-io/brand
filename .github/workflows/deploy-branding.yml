@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - 'packages/landing/packages/www/public/branding/**'
+      - "**"
   workflow_dispatch:
 
 permissions:
@@ -32,7 +32,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'packages/landing/packages/www/public/branding'
+          path: "."
 
       - name: Deploy to GitHub Pages
         id: deployment
