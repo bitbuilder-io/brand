@@ -1,171 +1,118 @@
 #!/usr/bin/env bun
 /**
- * Extract all unique logo variations from logos.svg
- * Each variation will be saved as a separate SVG file
+ * Extract the BitBuilder logo set from the Inkscape master sheet as clean, valid SVGs.
+ *
+ * Usage: bun extract-logos.ts [master.svg] [out-dir]
+ *   master.svg  default ../bitbuilder.cloud/logos.svg
+ *   out-dir     default ./logos
+ *
+ * Each composition below names the master's top-level groups it is made of. The script keeps
+ * those whole elements (never slicing markup), crops to the drawing with Inkscape, optimizes
+ * with scour, and writes colourways:
+ *   <name>-ink.svg      #111111 (Terminal Black), for light grounds
+ *   <name>-paper.svg    #ffffff, for dark grounds
+ *   <name>.svg          currentColor, for inlining (single-ink compositions only)
+ * Boxed compositions (a filled box with the mark knocked out) get ink and paper only:
+ * the knockout needs a real second colour, which currentColor can't supply.
+ * A contact sheet (contact-sheet.png) is written next to them for review.
+ *
+ * Needs inkscape, scour, rsvg-convert and magick on PATH. Writes only under out-dir.
  */
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 
-import { readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { join } from 'path';
+const MASTER = resolve(process.argv[2] ?? join(import.meta.dir, '../bitbuilder.cloud/logos.svg'))
+const OUT = resolve(process.argv[3] ?? join(import.meta.dir, 'logos'))
+const WORK = join(OUT, '.work')
 
-const sourceFile = '../logos.svg';
-const outputDir = './logos';
+type Comp = { name: string; ids: Array<string>; knockout?: boolean; note: string }
+const COMPOSITIONS: Array<Comp> = [
+  { name: 'lockup', ids: ['SvgjsG1014', 'SvgjsG1015', 'SvgjsG1016'], note: 'BITBUILDER >_ CLOUD, the primary lockup' },
+  { name: 'lockup-wide', ids: ['SvgjsG1550', 'SvgjsG1551', 'SvgjsG1552'], note: 'Primary lockup with wider letter spacing' },
+  { name: 'lockup-terminal', ids: ['SvgjsG1131', 'SvgjsG1132', 'SvgjsG1133'], knockout: true, note: 'Lockup with the prompt in a filled terminal box' },
+  { name: 'wordmark', ids: ['SvgjsG1014', 'SvgjsG1015'], note: 'BITBUILDER >_, for narrow headers' },
+  { name: 'prompt', ids: ['SvgjsG1015'], note: 'The >_ prompt alone: favicons, avatars, app icons' },
+  { name: 'prompt-lead', ids: ['SvgjsG1558', 'SvgjsG1559'], note: '>_ BITBUILDER CLOUD, prompt first' },
+  { name: 'prompt-divider', ids: ['SvgjsG1629', 'SvgjsG1630', 'SvgjsG1631'], note: '>_ | BITBUILDER CLOUD' },
+  { name: 'stacked-tagline', ids: ['SvgjsG1016-8', 'SvgjsG1017', 'SvgjsG1018', 'SvgjsG1019'], note: '>_ | BITBUILDER CLOUD over the tagline' },
+  { name: 'badge-tagline', ids: ['SvgjsG1622', 'SvgjsG1623', 'SvgjsG1624'], knockout: true, note: 'BITBUILDER CLOUD knocked out of a filled badge, tagline below' },
+  { name: 'framed', ids: ['SvgjsG2474', 'SvgjsG2475', 'SvgjsG2476', 'SvgjsG2477'], note: 'Lockup in a single rule frame' },
+  { name: 'framed-double', ids: ['SvgjsG2872', 'SvgjsG2873', 'SvgjsG2874', 'SvgjsG2875'], note: 'Lockup in a double rule frame' },
+  { name: 'framed-bold', ids: ['SvgjsG3003', 'SvgjsG3004', 'SvgjsG3005', 'SvgjsG3006'], note: 'Lockup in a heavy frame' },
+  { name: 'framed-tagline', ids: ['SvgjsG4933', 'SvgjsG4934', 'SvgjsG4935', 'SvgjsG4936'], note: 'Prompt and lockup with tagline in a heavy frame' },
+]
 
-// Create output directory
-mkdirSync(outputDir, { recursive: true });
+const INK = '#111111'
+const PAPER = '#ffffff'
+// Master fills: #111111 and #252a34 are the dark ink; #ffffff is the knockout inside boxes.
+const DARK = /^#(111111|111|252a34)$/i
+const LIGHT = /^#(ffffff|fff)$/i
 
-const svgContent = readFileSync(sourceFile, 'utf-8');
+function run(cmd: Array<string>) {
+  const p = Bun.spawnSync(cmd, { stderr: 'pipe', stdout: 'pipe' })
+  if (p.exitCode !== 0) throw new Error(`${cmd[0]} failed: ${p.stderr.toString().slice(0, 400)}`)
+  return p.stdout.toString()
+}
 
-// Extract viewBox and dimensions
-const viewBoxMatch = svgContent.match(/viewBox="([^"]*)"/);
-const widthMatch = svgContent.match(/width="([^"]*)"/);
-const heightMatch = svgContent.match(/height="([^"]*)"/);
+function recolour(svg: string, ink: string, knock: string, single: boolean) {
+  return svg.replace(/(fill|stroke)="(#[0-9a-fA-F]{3,6})"/g, (_m, attr: string, hex: string) => {
+    if (single || DARK.test(hex)) return `${attr}="${ink}"`
+    if (LIGHT.test(hex)) return `${attr}="${knock}"`
+    return `${attr}="${ink}"`
+  })
+}
 
-const viewBox = viewBoxMatch ? viewBoxMatch[1] : '0 0 1920 2080';
-const width = widthMatch ? widthMatch[1] : '1920';
-const height = heightMatch ? heightMatch[1] : '2080';
+const src = readFileSync(MASTER, 'utf8')
+rmSync(WORK, { recursive: true, force: true })
+mkdirSync(WORK, { recursive: true })
 
-// Define logo compositions based on y-position ranges
-const compositions = [
-  {
-    name: '01-horizontal-black',
-    yRange: [0, 100],
-    description: 'Horizontal logo with terminal icon - Black',
-    fill: '#111111'
-  },
-  {
-    name: '02-horizontal-white',
-    yRange: [100, 230],
-    description: 'Horizontal logo with terminal icon - White',
-    fill: '#ffffff'
-  },
-  {
-    name: '03-large-black',
-    yRange: [230, 370],
-    description: 'Large scale logo - Black',
-    fill: '#111111'
-  },
-  {
-    name: '04-large-white',
-    yRange: [370, 520],
-    description: 'Large scale logo - White',
-    fill: '#ffffff'
-  },
-  {
-    name: '05-with-tagline-white',
-    yRange: [520, 770],
-    description: 'Full brand with tagline - White on dark',
-    fill: '#ffffff'
-  },
-  {
-    name: '06-with-tagline-black',
-    yRange: [770, 1050],
-    description: 'Full brand with tagline - Black on light',
-    fill: '#111111'
-  },
-  {
-    name: '07-compact-blue',
-    yRange: [0, 650],
-    xRange: [1080, 2000],
-    description: 'Compact brand mark - Dark blue',
-    fill: '#252a34'
-  },
-  {
-    name: '08-horizontal-icon-black',
-    yRange: [1080, 1240],
-    description: 'Horizontal with boxed icon - Black',
-    fill: '#111111'
-  },
-  {
-    name: '09-compact-black',
-    yRange: [1240, 1330],
-    description: 'Compact horizontal - Black',
-    fill: '#111111'
-  },
-  {
-    name: '10-compact-icon-black',
-    yRange: [1240, 1330],
-    xRange: [1080, 1920],
-    description: 'Compact with boxed icon - Black',
-    fill: '#111111'
-  },
-  {
-    name: '11-compact-icon-white',
-    yRange: [1420, 1550],
-    xRange: [1080, 1920],
-    description: 'Compact with boxed icon - White',
-    fill: '#ffffff'
-  },
-  {
-    name: '12-full-brand-white',
-    yRange: [1540, 1780],
-    description: 'Complete brand package with tagline - White',
-    fill: '#ffffff'
+const pngs: Array<string> = []
+for (const c of COMPOSITIONS) {
+  const keep = new Set(c.ids)
+  let found = 0
+  const only = new HTMLRewriter()
+    .on('#layer1 > *', {
+      element: (e) => {
+        if (keep.has(e.getAttribute('id') ?? '')) found++
+        else e.remove()
+      },
+    })
+    .transform(src)
+  if (found !== c.ids.length) throw new Error(`${c.name}: found ${found} of ${c.ids.length} groups in ${MASTER}`)
+
+  const a = join(WORK, `${c.name}.svg`)
+  const b = join(WORK, `${c.name}.cropped.svg`)
+  const m = join(WORK, `${c.name}.min.svg`)
+  writeFileSync(a, only)
+  run(['inkscape', a, '--export-area-drawing', '--export-plain-svg', `--export-filename=${b}`])
+  run(['scour', '-i', b, '-o', m, '--enable-viewboxing', '--enable-id-stripping', '--shorten-ids',
+    '--remove-metadata', '--strip-xml-prolog', '--set-precision=5', '--indent=none', '--no-line-breaks'])
+  const min = readFileSync(m, 'utf8')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/ featurekey="[^"]*"/g, '')
+    .replace(/<svg /, `<svg role="img" aria-label="BitBuilder Cloud" `)
+    .trim()
+
+  writeFileSync(join(OUT, `${c.name}-ink.svg`), recolour(min, INK, PAPER, !c.knockout) + '\n')
+  writeFileSync(join(OUT, `${c.name}-paper.svg`), recolour(min, PAPER, INK, !c.knockout) + '\n')
+  if (!c.knockout) writeFileSync(join(OUT, `${c.name}.svg`), recolour(min, 'currentColor', '', true) + '\n')
+
+  for (const [tone, bg] of [['ink', '#e5e7eb'], ['paper', '#14171f']] as const) {
+    const png = join(WORK, `${c.name}-${tone}.png`)
+    run(['rsvg-convert', '-h', '120', '-b', bg, join(OUT, `${c.name}-${tone}.svg`), '-o', png])
+    pngs.push(png)
   }
-];
+}
 
-// Extract groups for each composition
-compositions.forEach(comp => {
-  const groups: string[] = [];
+run(['magick', 'montage', ...pngs, '-tile', '2x', '-geometry', '+12+12', '-background', '#9ca3af',
+  '-title', 'BitBuilder logo set (ink | paper)', join(OUT, 'contact-sheet.png')])
+rmSync(WORK, { recursive: true, force: true })
 
-  // Find all groups within the y-range
-  const groupRegex = /<g\s+id="([^"]*)"[^>]*>/g;
-  let match;
-
-  let content = svgContent;
-  let groupStack: string[] = [];
-  let currentY = 0;
-
-  // Parse and extract groups
-  const lines = svgContent.split('\n');
-  let capturing = false;
-  let capturedContent: string[] = [];
-  let depth = 0;
-
-  lines.forEach(line => {
-    // Check for transform with y-coordinate
-    const transformMatch = line.match(/transform="[^"]*\(([^)]*)\)"/);
-    if (transformMatch) {
-      const coords = transformMatch[1].split(',');
-      if (coords.length >= 6) {
-        const y = parseFloat(coords[5]);
-        if (comp.xRange) {
-          const x = parseFloat(coords[4]);
-          if (y >= comp.yRange[0] && y <= comp.yRange[1] &&
-              x >= comp.xRange[0] && x <= comp.xRange[1]) {
-            capturing = true;
-          }
-        } else if (y >= comp.yRange[0] && y <= comp.yRange[1]) {
-          capturing = true;
-        }
-      }
-    }
-
-    if (capturing) {
-      capturedContent.push(line);
-      if (line.includes('<g')) depth++;
-      if (line.includes('</g>')) {
-        depth--;
-        if (depth === 0) capturing = false;
-      }
-    }
-  });
-
-  if (capturedContent.length > 0) {
-    const svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   width="${width}"
-   height="${height}"
-   viewBox="${viewBox}"
-   version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-  <title>${comp.description}</title>
-  ${capturedContent.join('\n')}
-</svg>`;
-
-    const outputPath = join(outputDir, `${comp.name}.svg`);
-    writeFileSync(outputPath, svg, 'utf-8');
-    console.log(`✓ Created: ${comp.name}.svg - ${comp.description}`);
-  }
-});
-
-console.log('\n✅ Logo extraction complete!');
+const index = COMPOSITIONS.map((c) => `| \`${c.name}\` | ${c.note} | ${c.knockout ? 'ink, paper' : 'ink, paper, currentColor'} |`)
+writeFileSync(
+  join(OUT, 'INDEX.md'),
+  `# Logo files\n\nGenerated by \`extract-logos.ts\` from \`bitbuilder.cloud/logos.svg\`. Don't edit by hand; edit the master and rerun.\n\n` +
+    `| Name | What | Colourways |\n| --- | --- | --- |\n${index.join('\n')}\n\n` +
+    `Files: \`<name>-ink.svg\` (#111111, light grounds), \`<name>-paper.svg\` (#ffffff, dark grounds), \`<name>.svg\` (currentColor, for inlining).\n`,
+)
+console.log(`${COMPOSITIONS.length} compositions written to ${OUT}`)
